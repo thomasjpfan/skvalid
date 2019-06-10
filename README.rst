@@ -1,7 +1,8 @@
 skvalid
 ===========
 
-Lightweight scikit-learn validation framework. The documentation is hosted at `ReadTheDocs <https://skvalid.readthedocs.io/en/latest/>`_.
+Lightweight scikit-learn validation framework. The documentation can be found 
+`here <https://skvalid.readthedocs.io/en/latest/>`_.
 
 .. image:: https://circleci.com/gh/thomasjpfan/skvalid.svg?style=shield
     :target: https://circleci.com/gh/thomasjpfan/skvalid
