@@ -1,0 +1,5 @@
+name: skvalid_dev
+
+dependencies:
+  - python=3.6
+  - numpy=1.13.*

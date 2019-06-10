@@ -1,0 +1,7 @@
+name: skvalid_docs
+
+dependencies:
+  - python=3.6
+  - numpy=1.13.3
+  - sphinx=1.7.5
+  - sphinx_rtd_theme=0.4.0
