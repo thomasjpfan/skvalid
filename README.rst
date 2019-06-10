@@ -33,8 +33,7 @@ In this example, we define the valid parameters for scikit-learn's
         "multi_class": Enum("ovr", "multinomial", "auto"),
         "verbose": Interval(int, 0, tags=["control"]),
         "warm_start": TypeOf(bool, tags=["control"]),
-        "n_jobs": Union(Interval(int, 1, None), Enum(-1, None), 
-                        tags=["resource"]),
+        "n_jobs": Union(Interval(int, 1, None), Enum(-1, None), tags=["resource"]),
         "l1_ratio": Union(Interval(float, 0, 1), Const(None))
     }
 
@@ -60,8 +59,7 @@ The following will raise an error:
     # TypeError: 2.3 is not a int or RandomState or NoneType
 
     validate_paramters(lr_config, class_weight="unbalanced")
-    # ValueError: unbalanced is not a dict, unbalanced is not 
-    # in [balanced, None]
+    # ValueError: unbalanced is not a dict, unbalanced is not in [balanced, None]
 
     validate_paramters(lr_config, tol=-1.3)
     # ValueError: -1.3 not in (0, inf)    
@@ -98,8 +96,7 @@ This light parameter definition scheme can be integrated into scikit-learn's
             "multi_class": Enum("ovr", "multinomial", "auto"),
             "verbose": Interval(int, 0, tags=["control"]),
             "warm_start": TypeOf(bool, tags=["control"]),
-            "n_jobs": Union(Interval(int, 1, None), Const(-1, None), 
-                            tags=["resource"]),
+            "n_jobs": Union(Interval(int, 1, None), Const(-1, None), tags=["resource"]),
             "l1_ratio": Union(Interval(float, 0, 1), Const(None))
         }
         
