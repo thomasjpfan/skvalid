@@ -6,8 +6,8 @@ from .parameters import Union
 from .parameters import Interval
 from .parameters import Const
 
-from .validator import validate_paramters
+from .validator import validate_parameters
 
 __all__ = [
-    "TypeOf", "Enum", "Union", "Interval", "Const", "validate_paramters"
+    "TypeOf", "Enum", "Union", "Interval", "Const", "validate_parameters"
 ]

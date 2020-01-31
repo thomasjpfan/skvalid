@@ -49,22 +49,22 @@ The following will raise an error:
 
 .. code-block:: python
 
-    validate_paramters(lr_config, penalty="l3")
+    validate_parameters(lr_config, penalty="l3")
     # ValueError: l3 is not in [l2, l1, elasticnet, none]
 
-    validate_paramters(lr_config, warm_start="bad")
+    validate_parameters(lr_config, warm_start="bad")
     # TypeError: Bad is not a bool
 
-    validate_paramters(lr_config, random_state=2.3)
+    validate_parameters(lr_config, random_state=2.3)
     # TypeError: 2.3 is not a int or RandomState or NoneType
 
-    validate_paramters(lr_config, class_weight="unbalanced")
+    validate_parameters(lr_config, class_weight="unbalanced")
     # ValueError: unbalanced is not a dict, unbalanced is not in [balanced, None]
 
-    validate_paramters(lr_config, tol=-1.3)
+    validate_parameters(lr_config, tol=-1.3)
     # ValueError: -1.3 not in (0, inf)    
 
-    validate_paramters(lr_config, max_iter=-3)
+    validate_parameters(lr_config, max_iter=-3)
     # ValueError: -3 not in [0, inf)
 
 Integration with scikit-learn's LogisticRegression
@@ -79,7 +79,7 @@ This light parameter definition scheme can be integrated into scikit-learn's
         def _validate_params(self):
             if hasattr(self, "valid_params"):
                 non_default_params = _non_default_params(self)
-                validate_paramters(self.valid_params, non_default_params)
+                validate_parameters(self.valid_params, non_default_params)
 
     class LogisticRegression(...):
         

@@ -1,7 +1,7 @@
 from itertools import chain
 
 
-def validate_paramters(config, **params):
+def validate_parameters(config, **params):
     # check parameters exist
     for name in params:
         if name not in config:
