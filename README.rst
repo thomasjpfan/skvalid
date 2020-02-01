@@ -101,7 +101,7 @@ This light parameter definition scheme can be integrated into scikit-learn's
         }
         
         def fit(self, X, ...):
-            self._valid_params(self.valid_params, self.get_params())
+            validate_parameters(self.valid_params, self.get_params())
 
 There will be checks in the tests to make sure ``valid_params`` and the 
 parameters are consistent. 
