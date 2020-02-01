@@ -24,7 +24,7 @@ def test_validator_parameters_exist(params):
         "solver": Enum("newton-cg", "lbfgs", "liblinear", "sag", "saga")
     }
     # does not raise
-    validate_parameters(config, **params)
+    validate_parameters(config, params)
 
 
 @pytest.mark.parametrize("params, error_key", [
@@ -50,7 +50,7 @@ def test_validator_parameters_not_exist(params, error_key):
     }
     msg = "{} is not a valid parameter".format(error_key)
     with pytest.raises(KeyError, match=msg):
-        validate_parameters(config, **params)
+        validate_parameters(config, params)
 
 
 @pytest.mark.parametrize("params", [{
@@ -76,7 +76,7 @@ def test_validator_parameters_validate_error(params):
         "n_jobs": Union(Interval(int, 1, None), Const(-1), Const(None))
     }
     with pytest.raises(Exception):
-        validate_parameters(config, **params)
+        validate_parameters(config, params)
 
 
 @pytest.mark.parametrize("params", [{
@@ -106,7 +106,7 @@ def test_validator_conditions_exists(params):
             }
         }
     }
-    validate_parameters(config, **params)
+    validate_parameters(config, params)
 
 
 @pytest.mark.parametrize("params, msg", (({
@@ -138,4 +138,4 @@ def test_validator_conditions_error(params, msg):
         }
     }
     with pytest.raises(ValueError, match=msg):
-        validate_parameters(config, **params)
+        validate_parameters(config, params)

@@ -11,7 +11,7 @@ class Parameter(ABC):
         self.tags = tags
 
     @abstractmethod
-    def validate(self, value):
+    def validate(self, value, name):
         ...
 
 
@@ -20,9 +20,9 @@ class Const(Parameter):
         super().__init__(tags=tags)
         self.value = value
 
-    def validate(self, value):
+    def validate(self, value, name):
         if value != self.value:
-            raise ValueError("{} != {}".format(value, self.value))
+            raise ValueError("{}: {} != {}".format(name, value, self.value))
 
 
 class TypeOf(Parameter):
@@ -30,17 +30,18 @@ class TypeOf(Parameter):
         super().__init__(tags=tags)
         self.types = types
 
-    def validate(self, value):
+    def validate(self, value, name):
         for t in self.types:
             if isinstance(value, t):
                 return
 
         if len(self.types) == 1:
-            raise TypeError("{} is not a {}".format(value,
-                                                    self.types[0].__name__))
-        type_names = [t.__name__ for t in self.types]
-        raise TypeError("{} is not a {}".format(value,
-                                                " or ".join(type_names)))
+            raise TypeError("{}: {} is not a {}".format(
+                name, value,
+                getattr(self.types[0], "__name__", str(self.types[0]))))
+        type_names = [getattr(t, "__name__", str(t)) for t in self.types]
+        raise TypeError("{}: {} is not a {}".format(name, value,
+                                                    " or ".join(type_names)))
 
 
 class Enum(Parameter):
@@ -50,7 +51,7 @@ class Enum(Parameter):
             raise ValueError("members must have at least one item")
         self.members = members
 
-    def validate(self, value):
+    def validate(self, value, name):
         if value not in self.members:
             members_str = ', '.join(str(m) for m in self.members)
             raise ValueError("{} is not in [{}]".format(value, members_str))
@@ -67,17 +68,17 @@ class Union(Parameter):
         super().__init__(tags=tags)
         self.params = params
 
-    def validate(self, value):
+    def validate(self, value, name):
         error_msg = []
         for p in self.params:
             try:
-                p.validate(value)
+                p.validate(value, name)
                 return
             except (TypeError, ValueError) as e:
-                error_msg.append(str(e))
+                error_msg.append(str(e)[len(name) + 2:])
 
         # None of the params validated value
-        raise ValueError(', '.join(error_msg))
+        raise ValueError('{}: {}'.format(name, ' and '.join(error_msg)))
 
 
 class Interval(TypeOf):
@@ -99,8 +100,8 @@ class Interval(TypeOf):
         self.lower_inclusive = lower_inclusive
         self.upper_inclusive = upper_inclusive
 
-    def validate(self, value):
-        super().validate(value)
+    def validate(self, value, name):
+        super().validate(value, name)
 
         if self.lower is not None:
             if self.lower_inclusive:
@@ -108,7 +109,7 @@ class Interval(TypeOf):
             else:
                 lower_in_range = self.lower < value
             if not lower_in_range:
-                raise ValueError(self._get_error_msg(value))
+                raise ValueError(self._get_error_msg(value, name))
 
         if self.upper is not None:
             if self.upper_inclusive:
@@ -116,9 +117,9 @@ class Interval(TypeOf):
             else:
                 upper_in_range = value < self.upper
             if not upper_in_range:
-                raise ValueError(self._get_error_msg(value))
+                raise ValueError(self._get_error_msg(value, name))
 
-    def _get_error_msg(self, value):
+    def _get_error_msg(self, value, name):
         msg_list = ["{} not in".format(value)]
         if self.lower is not None:
             if self.lower_inclusive:
@@ -137,4 +138,4 @@ class Interval(TypeOf):
             msg_list.append(upper_str)
         else:
             msg_list.append("inf)")
-        return " ".join(msg_list)
+        return "{}: {}".format(name, " ".join(msg_list))

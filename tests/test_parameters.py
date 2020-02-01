@@ -15,7 +15,7 @@ import typing
                           (TypeOf(float), 10.1), (TypeOf(int), 10),
                           (TypeOf(dict), {})])
 def test_typeof_valid_values(type_of, value):
-    type_of.validate(value)
+    type_of.validate(value, "tol")
 
 
 @pytest.mark.parametrize('type_of,value', [(TypeOf(bool), 'Hello world'),
@@ -24,15 +24,17 @@ def test_typeof_valid_values(type_of, value):
                                            (TypeOf(int), 10.1),
                                            (TypeOf(dict), True)])
 def test_typeof_invalid_values(type_of, value):
-    msg = '{} is not a {}'.format(value, type_of.types[0].__name__)
+    cur_type = type_of.types[0]
+    name = getattr(cur_type, "__name__", str(cur_type))
+    msg = 'tol: {} is not a {}'.format(value, name)
     with pytest.raises(TypeError, match=msg):
-        type_of.validate(value)
+        type_of.validate(value, "tol")
 
 
 def test_typeof_invalid_values_multiple():
-    msg = '4.0 is not a RandomState or int'
+    msg = 'tol: 4.0 is not a RandomState or int'
     with pytest.raises(TypeError, match=msg):
-        TypeOf(RandomState, int).validate(4.0)
+        TypeOf(RandomState, int).validate(4.0, "tol")
 
 
 @pytest.mark.parametrize('constant,value', [(Const(4), 4),
@@ -42,7 +44,7 @@ def test_typeof_invalid_values_multiple():
                                             (Const(None), None)])
 def test_constant_valid_values(constant, value):
     # does not raise
-    constant.validate(value)
+    constant.validate(value, "tol")
 
 
 @pytest.mark.parametrize('constant,value', [(Const(4), 3),
@@ -52,9 +54,9 @@ def test_constant_valid_values(constant, value):
                                             (Const(None), 4),
                                             (Const(4), None)])
 def test_constant_invalid_values(constant, value):
-    msg = '{} != {}'.format(value, constant.value)
+    msg = 'tol: {} != {}'.format(value, constant.value)
     with pytest.raises(ValueError, match=msg):
-        constant.validate(value)
+        constant.validate(value, "tol")
 
 
 @pytest.mark.parametrize('members, msg',
@@ -75,7 +77,7 @@ def test_enum_invalid_members_init(members, msg):
                           (Enum('a', 1, None, 1.0, True), True)])
 def test_enum_values(enum, value):
     # does not raise
-    enum.validate(value)
+    enum.validate(value, "tol")
 
 
 @pytest.mark.parametrize(
@@ -86,13 +88,13 @@ def test_enum_values(enum, value):
            True), 'bad', r'bad is not in \[a, 1, None, 1.0, True\]')])
 def test_enum_invalid_values(enum, value, msg):
     with pytest.raises(ValueError, match=msg):
-        enum.validate(value)
+        enum.validate(value, "tol")
 
 
 def test_enum_invalid_type_error():
     enum, value, msg = Enum('hello', 'f'), 1, r'1 is not in \[hello, f\]'
     with pytest.raises(ValueError, match=msg):
-        enum.validate(value)
+        enum.validate(value, 'tol')
 
 
 @pytest.mark.parametrize(
@@ -108,12 +110,12 @@ def test_union_invalid_params_init(params, msg):
 
 @pytest.mark.parametrize('union, value, msg', [
     (Union(TypeOf(int), Enum('hello', 'world')), None,
-     r'None is not a int, None is not in \[hello, world\]'),
-    (Union(TypeOf(int), Enum('hello', 'world')), 0.4, '0.4 is not a int'),
+     r'tol: None is not a int and is not in \[hello, world\]'),
+    (Union(TypeOf(int), Enum('hello', 'world')), 0.4, 'tol: 0.4 is not a int'),
 ])
 def test_union_invalid_values(union, value, msg):
     with pytest.raises(ValueError, match=msg):
-        union.validate(value)
+        union.validate(value, "tol")
 
 
 @pytest.mark.parametrize('union, value', [
@@ -126,7 +128,7 @@ def test_union_invalid_values(union, value, msg):
 ])
 def test_union_valid_values(union, value):
     # does not raise
-    union.validate(value)
+    union.validate(value, "tol")
 
 
 def test_union_removes_tags():
@@ -163,16 +165,16 @@ def test_interval_error_init(lower, upper, msg):
     (Interval(float, lower=-3, upper=2), 2.0),
 ])
 def test_interval_valid_values(interval, value):
-    interval.validate(value)
+    interval.validate(value, "tol")
 
 
 @pytest.mark.parametrize('interval, value, msg', [
-    (Interval(int, lower=None, upper=2), 1.0, '1.0 is not a int'),
-    (Interval(float, lower=None, upper=2), 1, '1 is not a float'),
+    (Interval(int, lower=None, upper=2), 1.0, 'tol: 1.0 is not a int'),
+    (Interval(float, lower=None, upper=2), 1, 'tol: 1 is not a float'),
 ])
 def test_interval_invalid_type(interval, value, msg):
     with pytest.raises(TypeError, match=msg):
-        interval.validate(value)
+        interval.validate(value, "tol")
 
 
 @pytest.mark.parametrize('interval, value, msg', [
@@ -191,4 +193,4 @@ def test_interval_invalid_type(interval, value, msg):
 ])
 def test_interval_invalid_values(interval, value, msg):
     with pytest.raises(ValueError, match=msg):
-        interval.validate(value)
+        interval.validate(value, 'tol')

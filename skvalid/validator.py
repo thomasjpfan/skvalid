@@ -1,15 +1,15 @@
 from itertools import chain
 
 
-def validate_parameters(config, **params):
+def validate_parameters(config, params):
     # check parameters exist
     for name in params:
         if name not in config:
             raise KeyError("{} is not a valid parameter".format(name))
 
     # validate parameters
-    for param, value in params.items():
-        config[param].validate(value)
+    for name, value in params.items():
+        config[name].validate(value, name)
 
     # validate conditions
     try:

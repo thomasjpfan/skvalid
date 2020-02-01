@@ -20,21 +20,26 @@ In this example, we define the valid parameters for scikit-learn's
 
 .. code-block:: python
 
-    lr_config = {
+    from skvalid import Interval, TypeOf, Union, Enum, Const
+    from numpy.random import RandomState
+    import numbers
+
+    valid_params = {
         "penalty": Enum("l2", "l1", "elasticnet", "none"),
         "dual": TypeOf(bool),
-        "tol": Interval(float, 0, None, lower_inclusive=False),
-        "C": Interval(float, 0),
+        "tol": Interval(float, lower=0, upper=None, lower_inclusive=False),
+        "C": Interval(float, lower=0),
         "fit_intercept": TypeOf(bool),
         "class_weight": Union(TypeOf(dict), Enum('balanced', None)),
         "random_state": TypeOf(int, RandomState, type(None)),
-        "solver": Enum("newton-cg", "lbfgs", "liblinear", "sag", "saga"),
-        "max_iter": Interval(int, 0),
-        "multi_class": Enum("ovr", "multinomial", "auto"),
-        "verbose": Interval(int, 0, tags=["control"]),
+        "solver": Enum("newton-cg", "lbfgs", "liblinear", "sag", "saga", "warn"),
+        "max_iter": Interval(int, lower=0),
+        "multi_class": Enum("ovr", "multinomial", "auto", "warn"),
+        "verbose": Interval(int, lower=0, tags=["control"]),
         "warm_start": TypeOf(bool, tags=["control"]),
-        "n_jobs": Union(Interval(int, 1, None), Enum(-1, None), tags=["resource"]),
-        "l1_ratio": Union(Interval(float, 0, 1), Const(None))
+        "n_jobs": Union(Interval(int, lower=1, upper=None), Enum(-1, None), tags=["resource"]),
+        "l1_ratio": Union(Interval(float, lower=0, upper=1), Const(None)),
+        "intercept_scaling": TypeOf(numbers.Real)
     }
 
 With this configuration, we can validate a set of parameters:
@@ -42,30 +47,30 @@ With this configuration, we can validate a set of parameters:
 .. code-block:: python
 
     from skvalid import validate_parameters
-    validate_parameters(lr_config, penalty="l2") 
+    validate_parameters(lr_config, dict(penalty="l2"))
     # Does not raise
 
 The following will raise an error:
 
 .. code-block:: python
 
-    validate_parameters(lr_config, penalty="l3")
-    # ValueError: l3 is not in [l2, l1, elasticnet, none]
+    validate_parameters(lr_config, dict(penalty="l3"))
+    # ValueError: penalty: l3 is not in [l2, l1, elasticnet, none]
 
-    validate_parameters(lr_config, warm_start="bad")
-    # TypeError: Bad is not a bool
+    validate_parameters(lr_config, dict(warm_start="bad"))
+    # TypeError: warm_start: Bad is not a bool
 
-    validate_parameters(lr_config, random_state=2.3)
-    # TypeError: 2.3 is not a int or RandomState or NoneType
+    validate_parameters(lr_config, dict(random_state=2.3))
+    # TypeError: random_state: 2.3 is not a int or RandomState or NoneType
 
-    validate_parameters(lr_config, class_weight="unbalanced")
-    # ValueError: unbalanced is not a dict, unbalanced is not in [balanced, None]
+    validate_parameters(lr_config, dict(class_weight="unbalanced"))
+    # ValueError: class_weight: unbalanced is not a dict, unbalanced is not in [balanced, None]
 
-    validate_parameters(lr_config, tol=-1.3)
-    # ValueError: -1.3 not in (0, inf)    
+    validate_parameters(lr_config, dict(tol=-1.3))
+    # ValueError: tol: -1.3 not in (0, inf)    
 
-    validate_parameters(lr_config, max_iter=-3)
-    # ValueError: -3 not in [0, inf)
+    validate_parameters(lr_config, dict(max_iter=-3))
+    # ValueError: max_iter: -3 not in [0, inf)
 
 Integration with scikit-learn's LogisticRegression
 ..................................................
@@ -75,33 +80,28 @@ This light parameter definition scheme can be integrated into scikit-learn's
 
 .. code-block:: python
 
-    class BaseEstimator:
-        def _validate_params(self):
-            if hasattr(self, "valid_params"):
-                non_default_params = _non_default_params(self)
-                validate_parameters(self.valid_params, non_default_params)
-
     class LogisticRegression(...):
         
         valid_params = {
             "penalty": Enum("l2", "l1", "elasticnet", "none"),
             "dual": TypeOf(bool),
-            "tol": Interval(float, 0, None, lower_inclusive=False),
-            "C": Interval(float, 0),
+            "tol": Interval(float, lower=0, upper=None, lower_inclusive=False),
+            "C": Interval(float, lower=0),
             "fit_intercept": TypeOf(bool),
-            "class_weight": Union(TypeOf(dict), Const('balanced', None)),
+            "class_weight": Union(TypeOf(dict), Enum('balanced', None)),
             "random_state": TypeOf(int, RandomState, type(None)),
-            "solver": Enum("newton-cg", "lbfgs", "liblinear", "sag", "saga"),
-            "max_iter": Interval(int, 0),
-            "multi_class": Enum("ovr", "multinomial", "auto"),
-            "verbose": Interval(int, 0, tags=["control"]),
+            "solver": Enum("newton-cg", "lbfgs", "liblinear", "sag", "saga", "warn"),
+            "max_iter": Interval(int, lower=0),
+            "multi_class": Enum("ovr", "multinomial", "auto", "warn"),
+            "verbose": Interval(int, lower=0, tags=["control"]),
             "warm_start": TypeOf(bool, tags=["control"]),
-            "n_jobs": Union(Interval(int, 1, None), Const(-1, None), tags=["resource"]),
-            "l1_ratio": Union(Interval(float, 0, 1), Const(None))
+            "n_jobs": Union(Interval(int, lower=1, upper=None), Enum(-1, None), tags=["resource"]),
+            "l1_ratio": Union(Interval(float, lower=0, upper=1), Const(None)),
+            "intercept_scaling": TypeOf(numbers.Real)
         }
         
         def fit(self, X, ...):
-            self._valid_params()
+            self._valid_params(self.valid_params, self.get_params())
 
 There will be checks in the tests to make sure ``valid_params`` and the 
 parameters are consistent. 
